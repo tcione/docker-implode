@@ -1,0 +1,105 @@
+#!/usr/bin/env sh
+
+set -eu pipefail
+
+feedback() {
+  if [ -z $1 ]
+  then
+    echo "... all $2 removed!"
+  else
+    echo "... there was an error removing your $2!"
+    exit 1
+  fi
+}
+
+allContainers() {
+  docker ps -aq
+}
+
+removeContainers() {
+  echo "Removing containers..."
+
+  if [ -z "$(allContainers)" ]
+  then
+    echo "... no containers to remove!"
+    return
+  fi
+
+  echo '...stopping...'
+  docker stop $(allContainers)
+  echo '...removing...'
+  docker rm $(allContainers)
+
+  feedback "$(allContainers)" "containers"
+}
+
+allImages() {
+  docker images -qa
+}
+
+# TODO: Improve first run
+removeImages() {
+  echo "Removing images..."
+
+  if [ -z "$(allImages)" ]
+  then
+    echo "... no images to remove!"
+    return
+  fi
+
+  while [ -n "$(allImages)" ]; do
+    docker rmi -f $(allImages) || true
+  done
+
+  feedback "$(allImages)" "images"
+}
+
+allVolumes() {
+  docker volume ls -q
+}
+
+# TODO: Improve first run
+removeVolumes() {
+  echo "Removing volumes..."
+
+  if [ -z "$(allVolumes)" ]
+  then
+    echo "... no volumes to remove!"
+    return
+  fi
+
+  docker volume prune -f
+
+  if [ -z "$(allVolumes)" ]
+  then
+    echo "... all volumes removed!"
+    return
+  fi
+
+  docker volume rm "$(allVolumes)"
+
+  feedback "$(allVolumes)" "volumes"
+}
+
+allNetworks() {
+  docker network ls -q -f driver="bridge|host|null"
+}
+
+removeNetworks() {
+  echo "Removing networks..."
+
+  if [ -z "$(allNetworks)" ]
+  then
+    echo "... no networks to remove!"
+    return
+  fi
+
+  docker network rm $(allNetworks)
+
+  feedback "$(allNetworks)" "networks"
+}
+
+removeContainers
+removeImages
+removeVolumes
+removeNetworks
