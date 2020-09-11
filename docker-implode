@@ -16,6 +16,18 @@ allContainers() {
   docker ps -aq
 }
 
+allImages() {
+  docker images -qa
+}
+
+allVolumes() {
+  docker volume ls -q
+}
+
+allNetworks() {
+  docker network ls -q -f driver="bridge|host|null"
+}
+
 removeContainers() {
   echo "Removing containers..."
 
@@ -33,10 +45,6 @@ removeContainers() {
   feedback "$(allContainers)" "containers"
 }
 
-allImages() {
-  docker images -qa
-}
-
 # TODO: Improve first run
 removeImages() {
   echo "Removing images..."
@@ -52,10 +60,6 @@ removeImages() {
   done
 
   feedback "$(allImages)" "images"
-}
-
-allVolumes() {
-  docker volume ls -q
 }
 
 # TODO: Improve first run
@@ -79,10 +83,6 @@ removeVolumes() {
   docker volume rm "$(allVolumes)"
 
   feedback "$(allVolumes)" "volumes"
-}
-
-allNetworks() {
-  docker network ls -q -f driver="bridge|host|null"
 }
 
 removeNetworks() {
